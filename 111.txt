@@ -1,0 +1,11 @@
+digraph {
+    rankdir=LR;
+    bgcolor="darkslategray1";
+    fontname="Courier New";
+    node[shape="Mrecord",color="coral",style="filled",fillcolor="darkmagenta",fontcolor="white",fontsize=14];
+    edge[color="blue"];
+    FIRST[label="<data> data: XXX | <next> next: 1 | <prev> prev: 1"];
+    SECOND[label="<data> data: YYY | <next> next: 0 | <prev> prev: 0"];
+    FIRST:next -> SECOND:data;
+    SECOND:prev -> FIRST:data;
+}

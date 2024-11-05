@@ -1,30 +1,30 @@
 #ifndef LIST_VERIFY_H
 #define LIST_VERIFY_H
 
+#include <stdio.h>
+
 #include "dl_list.h"
+#include "dll_input_output.h"
 
-#define BLK "\033[0;30m"
-#define RED "\033[0;31m"
-#define GRN "\033[0;32m"
-#define YEL "\033[0;33m"
-#define BLU "\033[0;34m"
-#define MAG "\033[0;35m"
-#define CYN "\033[0;36m"
-#define WHT "\033[0;37m"
+#define SET_LIST_ERROR(__list_error_code__)    \
+    do                                         \
+    {                                          \
+        list->err_code = __list_error_code__;  \
+        return __list_error_code__;            \
+    } while (0)
 
-#define LIST_VERIFY(list_ptr)                                                   \
-    do                                                                          \
-    {                                                                           \
-        ListError temp_list_error = LIST_NO_ERROR;                              \
-        if ((temp_list_error = ListVerify(list_ptr)) != LIST_NO_ERROR)          \
-        {                                                                       \
-            printf("\n" RED "ERROR: LIST_ERRNO: %d" WHT "\n", temp_list_error)  \
-            return temp_list_error;                                             \
-        }                                                                       \
+#define LIST_VERIFY(__list_ptr__)                                                \
+    do                                                                           \
+    {                                                                            \
+        ListError temp_list_error = LIST_NO_ERROR;                               \
+        if ((temp_list_error = ListVerify(__list_ptr__)) != LIST_NO_ERROR)       \
+        {                                                                        \
+            printf("\n" RED "ERROR: LIST_ERRNO: %d" WHT "\n", temp_list_error);  \
+            SET_LIST_ERROR(temp_list_error);                                     \
+        }                                                                        \
     } while (0)
 
 
 ListError ListVerify(DLList_t* list);
-void ListDump(DLList_t* list);
 
 #endif

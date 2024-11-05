@@ -1,5 +1,5 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef LIST_SETTINGS_H
+#define LIST_SETTINGS_H
 
 typedef double ListElem_t;
 

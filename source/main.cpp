@@ -5,5 +5,7 @@
 
 int main()
 {
+    DLList_t list = {};
 
+    ListInit(&list);
 }
