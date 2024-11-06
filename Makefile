@@ -10,6 +10,7 @@ ADD_FLAGS :=
 SRC_DIR := source
 INC_DIR := include
 OBJ_DIR := object
+LOG_DIR := logs
 
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
 INCLUDES := $(wildcard $(INC_DIR)/*.h)
@@ -29,18 +30,22 @@ $(EXE): $(OBJECTS)
 $(OBJECTS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDES)
 	@$(CC) -c $(DED_FLAGS) $(ADD_FLAGS) -I$(INC_DIR) $< -o $@
 
-run: $(EXE)
+$(LOG_DIR):
+	@mkdir $@
+
+run: $(EXE) $(LOG_DIR)
 	@$(EXE)
 
 docs:
 	doxygen $(DOCS_NAME)
 
+clean: clean_obj clean_exe clean_logs
+
+clean_obj: $(OBJ_DIR)
+	rm $(OBJ_DIR)/*.o
+
 clean_exe:
 	rm *.exe
 
-clean_obj:
-	rm $(OBJ_DIR)/*.o
-
-clean:
-	rm $(OBJ_DIR)/*.o
-	rm *.exe
+clean_logs: $(LOG_DIR)
+	rm $(LOG_DIR)/*

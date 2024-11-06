@@ -3,10 +3,4 @@
 
 typedef double ListElem_t;
 
-enum CodeError
-{
-    NO_ERROR,
-    LIST_ERR,
-};
-
 #endif

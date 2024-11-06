@@ -12,6 +12,7 @@
 #define CYN "\033[0;36m"
 #define WHT "\033[0;37m"
 
-void ListDump(DLList_t* list);
+void DumpClose();
+void ListDump (DLList_t* list);
 
 #endif

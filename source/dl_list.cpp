@@ -147,8 +147,8 @@ ListError ListInsertHead(DLList_t* list, ListElem_t insert_value)
     list->free = list->next[old_free];
     list->next[old_free] = 0;
 
-    list->prev[old_free] = list->next[0];
-    list->next[0] = old_free;
+    list->prev[old_free] = list->prev[0];
+    list->prev[0] = old_free;
 
     ++list->size;
 
