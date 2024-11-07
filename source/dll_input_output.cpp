@@ -6,14 +6,13 @@
 #define DUMP_LOG_PATH  "logs/"
 #define DUMP_DOT_FNAME DUMP_LOG_PATH "dump_dotfile"
 
-static const int MAX_CMD_LEN             = 100;
-static const int MAX_FNAME_LEN           = 30;
+static const int         MAX_CMD_LEN     = 100;
+static const int         MAX_FNAME_LEN   = 30;
 static const char* const DUMP_HTML_FNAME = DUMP_LOG_PATH "list_log.html";
 
 static char dump_graph_fname[MAX_FNAME_LEN] = {};
 
-static int  dump_number = 0;
-
+static int   dump_number    = 0;
 static FILE* dump_html_fptr = NULL;
 
 static void DumpDotFile  (DLList_t* list);
@@ -61,7 +60,7 @@ static void DumpDotFile(DLList_t* list)
     fclose(dot_file);
 }
 
-void DumpHtmlFile(DLList_t * list)
+static void DumpHtmlFile(DLList_t * list)
 {
     if (dump_number == 0)
         dump_html_fptr = fopen(DUMP_HTML_FNAME, "w");
@@ -90,9 +89,10 @@ void DumpHtmlFile(DLList_t * list)
             "capacity: %d <br>\n"
             "size:     %d <br><br>\n"
             "\n"
-            "<img src=\"%s\"> <br>"
-            "\n"
-            "------------------------------------------------------------------------------------\n"
+            "<img src=\"%s\"> <br><br>\n\n"
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- <br>\n"
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- <br>\n"
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- <br>\n"
             "\n",
             list->free, list->capacity, list->size,
             dump_graph_fname);
@@ -108,7 +108,7 @@ void ListDump(DLList_t* list)
 }
 
 
-void SystemCallDot()
+static void SystemCallDot()
 {
     sprintf(dump_graph_fname, "list_graph%d.png", dump_number);
 

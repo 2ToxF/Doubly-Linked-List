@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "dl_list.h"
 #include "dll_input_output.h"
 
