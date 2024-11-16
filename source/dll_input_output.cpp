@@ -39,59 +39,45 @@ static void DumpDotFile(DLList_t* list)
             "\trankdir=LR;\n"
             "\tbgcolor=\"darkslategray1\";\n"
             "\tfontname=\"Courier New\";\n"
-            // "\tsplines=\"ortho\";\n"
             "\tnode[shape=\"Mrecord\", color=\"coral\", style=\"filled\", fillcolor=\"darkmagenta\", "
                     "fontcolor=\"white\", fontsize=14];\n"
-            "\tfree[label=\"free\", fontcolor=\"lightgreen\"];\n"
+            "\tfree[penwidth=3.0, color=\"green\", label=\"free\", fontcolor=\"lightgreen\"];\n"
             );
 
-    for (int i = 0; i < list->capacity; ++i)
+    fprintf(dot_file, "\tn%d[penwidth=3.0, label=\"IDX%d | data: %lg | <next> head: %d | <prev> tail: %d\"];\n",
+            0, 0, list->data[0], list->next[0], list->prev[0]);
+    for (int i = 1; i < list->capacity; ++i)
     {
         fprintf(dot_file, "\tn%d[label=\"IDX%d | data: %lg | <next> next: %d | <prev> prev: %d\"];\n",
                 i, i, list->data[i], list->next[i], list->prev[i]);
     }
 
-
     int cur_elem_idx = 0;
-    fprintf(dot_file, "\t{\n\t\tnode[group=\"used\"];\n");
-    for (int i = 0; i < list->size; ++i)
+    for (int i = 0; i < list->size - 1; ++i)
     {
-        fprintf(dot_file, "\t\tn%d -> n%d [color=\"red\"];\n\t\tn%d -> n%d [color=\"blue\"];\n",
-                cur_elem_idx, list->next[cur_elem_idx], cur_elem_idx, list->prev[cur_elem_idx]);
-        cur_elem_idx = list->next[cur_elem_idx];
-    }
-    fprintf(dot_file, "\t}\n");
-
-    // cur_elem_idx = 0;
-    // fprintf(dot_file, "\t{rank=\"same\"");
-    // for (int i = 0; i < list->size; ++i)
-    // {
-    //     fprintf(dot_file, "; n%d", cur_elem_idx);
-    //     cur_elem_idx = list->next[cur_elem_idx];
-    // }
-    // fprintf(dot_file, "};\n");
-
-
-    // cur_elem_idx = list->free;
-    // fprintf(dot_file, "\t{rank=\"same\"; free");
-    // for (int i = 0; i < list->capacity - list->size; ++i)
-    // {
-    //     fprintf(dot_file, "; n%d", cur_elem_idx);
-    //     cur_elem_idx = list->next[cur_elem_idx];
-    // }
-    // fprintf(dot_file, "};\n");
-
-    cur_elem_idx = list->free;
-    fprintf(dot_file, "\t{\n\t\tnode[group=\"free\"];\n");
-    fprintf(dot_file, "\t\tfree -> n%d:next [color=\"green\"];\n", cur_elem_idx);
-    for (int i = 0; i < list->capacity - list->size - 1; ++i)
-    {
-        fprintf(dot_file, "\t\tn%d:next -> n%d:next [color=\"green\"];\n",
+        fprintf(dot_file, "\tn%d -> n%d [weight=100, color=\"darkslategray1\"];\n",
                 cur_elem_idx, list->next[cur_elem_idx]);
         cur_elem_idx = list->next[cur_elem_idx];
     }
-    fprintf(dot_file, "\t}\n");
 
+    cur_elem_idx = 0;
+    for (int i = 0; i < list->size; ++i)
+    {
+        fprintf(dot_file, "\tn%d -> n%d [color=\"red\"];\n\tn%d -> n%d [color=\"blue\"];\n",
+                cur_elem_idx, list->next[cur_elem_idx], cur_elem_idx, list->prev[cur_elem_idx]);
+        cur_elem_idx = list->next[cur_elem_idx];
+    }
+
+    cur_elem_idx = list->free;
+    if (list->size != list->capacity)
+        fprintf(dot_file, "\tfree -> n%d:next [color=\"green\"];\n", cur_elem_idx);
+
+    for (int i = 0; i < list->capacity - list->size - 1; ++i)
+    {
+        fprintf(dot_file, "\tn%d:next -> n%d:next [color=\"green\"];\n",
+                cur_elem_idx, list->next[cur_elem_idx]);
+        cur_elem_idx = list->next[cur_elem_idx];
+    }
 
     fprintf(dot_file, "}\n");
 
