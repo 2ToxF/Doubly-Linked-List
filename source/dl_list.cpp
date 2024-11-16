@@ -85,16 +85,16 @@ ListError ListInsertAfter(DLList_t* list, ListElem_t insert_value, int prev_elem
         if ((list_err = ListResizeUp(list)) != LIST_NO_ERROR)
             return list_err;
 
-    int old_free = list->free;
+    int cur_free = list->free;
 
-    list->data[old_free] = insert_value;
-    list->free = list->next[old_free];
+    list->data[cur_free] = insert_value;
+    list->free = list->next[cur_free];
 
-    list->prev[old_free] = prev_elem_idx;
-    list->next[old_free] = list->next[prev_elem_idx];
+    list->prev[cur_free] = prev_elem_idx;
+    list->next[cur_free] = list->next[prev_elem_idx];
 
-    list->prev[list->next[prev_elem_idx]] = old_free;
-    list->next[prev_elem_idx] = old_free;
+    list->prev[list->next[prev_elem_idx]] = cur_free;
+    list->next[prev_elem_idx] = cur_free;
 
     ++list->size;
 
@@ -113,15 +113,15 @@ ListError ListInsertTail(DLList_t* list, ListElem_t insert_value)
         if ((list_err = ListResizeUp(list)) != LIST_NO_ERROR)
             return list_err;
 
-    int old_free = list->free;
+    int cur_free = list->free;
 
-    list->data[old_free] = insert_value;
+    list->data[cur_free] = insert_value;
 
-    list->free = list->next[old_free];
-    list->next[old_free] = list->prev[0];
+    list->free = list->next[cur_free];
+    list->next[cur_free] = list->prev[0];
 
-    list->prev[old_free] = 0;
-    list->prev[0] = old_free;
+    list->prev[cur_free] = 0;
+    list->prev[0] = cur_free;
 
     ++list->size;
 
@@ -140,15 +140,15 @@ ListError ListInsertHead(DLList_t* list, ListElem_t insert_value)
         if ((list_err = ListResizeUp(list)) != LIST_NO_ERROR)
             return list_err;
 
-    int old_free = list->free;
+    int cur_free = list->free;
+    list->free = list->next[cur_free];
 
-    list->data[old_free] = insert_value;
+    list->data[cur_free] = insert_value;
+    list->next[cur_free] = 0;
+    list->prev[cur_free] = list->prev[0];
 
-    list->free = list->next[old_free];
-    list->next[old_free] = 0;
-
-    list->prev[old_free] = list->prev[0];
-    list->prev[0] = old_free;
+    list->next[list->prev[0]] = cur_free;
+    list->prev[0] = cur_free;
 
     ++list->size;
 

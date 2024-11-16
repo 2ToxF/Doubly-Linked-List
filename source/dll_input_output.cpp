@@ -33,27 +33,65 @@ void DumpClose()
 static void DumpDotFile(DLList_t* list)
 {
     FILE* dot_file = fopen(DUMP_DOT_FNAME, "w");
-    int cur_elem_idx = 0;
 
     fprintf(dot_file,
             "digraph {\n"
             "\trankdir=LR;\n"
             "\tbgcolor=\"darkslategray1\";\n"
             "\tfontname=\"Courier New\";\n"
-            "\tnode[shape=\"Mrecord\",color=\"coral\",style=\"filled\",fillcolor=\"darkmagenta\",fontcolor=\"white\",fontsize=14];\n"
-            "\tedge[color=\"blue\"];\n"
+            // "\tsplines=\"ortho\";\n"
+            "\tnode[shape=\"Mrecord\", color=\"coral\", style=\"filled\", fillcolor=\"darkmagenta\", "
+                    "fontcolor=\"white\", fontsize=14];\n"
+            "\tfree[label=\"free\", fontcolor=\"lightgreen\"];\n"
             );
 
-    for (int i = 0; i < list->size; ++i)
+    for (int i = 0; i < list->capacity; ++i)
     {
-        fprintf(dot_file, "\t%d[label=\"IDX%d | data: %lg | next: %d | prev: %d\"];\n",
-                i, cur_elem_idx, list->data[cur_elem_idx],
-                list->next[cur_elem_idx], list->prev[cur_elem_idx]);
-        cur_elem_idx = list->next[cur_elem_idx];
+        fprintf(dot_file, "\tn%d[label=\"IDX%d | data: %lg | <next> next: %d | <prev> prev: %d\"];\n",
+                i, i, list->data[i], list->next[i], list->prev[i]);
     }
 
-    for (int i = 1; i < list->size; ++i)
-        fprintf(dot_file, "\t%d -> %d;\n%d -> %d\n", i-1, i, i, i-1);
+
+    int cur_elem_idx = 0;
+    fprintf(dot_file, "\t{\n\t\tnode[group=\"used\"];\n");
+    for (int i = 0; i < list->size; ++i)
+    {
+        fprintf(dot_file, "\t\tn%d -> n%d [color=\"red\"];\n\t\tn%d -> n%d [color=\"blue\"];\n",
+                cur_elem_idx, list->next[cur_elem_idx], cur_elem_idx, list->prev[cur_elem_idx]);
+        cur_elem_idx = list->next[cur_elem_idx];
+    }
+    fprintf(dot_file, "\t}\n");
+
+    // cur_elem_idx = 0;
+    // fprintf(dot_file, "\t{rank=\"same\"");
+    // for (int i = 0; i < list->size; ++i)
+    // {
+    //     fprintf(dot_file, "; n%d", cur_elem_idx);
+    //     cur_elem_idx = list->next[cur_elem_idx];
+    // }
+    // fprintf(dot_file, "};\n");
+
+
+    // cur_elem_idx = list->free;
+    // fprintf(dot_file, "\t{rank=\"same\"; free");
+    // for (int i = 0; i < list->capacity - list->size; ++i)
+    // {
+    //     fprintf(dot_file, "; n%d", cur_elem_idx);
+    //     cur_elem_idx = list->next[cur_elem_idx];
+    // }
+    // fprintf(dot_file, "};\n");
+
+    cur_elem_idx = list->free;
+    fprintf(dot_file, "\t{\n\t\tnode[group=\"free\"];\n");
+    fprintf(dot_file, "\t\tfree -> n%d:next [color=\"green\"];\n", cur_elem_idx);
+    for (int i = 0; i < list->capacity - list->size - 1; ++i)
+    {
+        fprintf(dot_file, "\t\tn%d:next -> n%d:next [color=\"green\"];\n",
+                cur_elem_idx, list->next[cur_elem_idx]);
+        cur_elem_idx = list->next[cur_elem_idx];
+    }
+    fprintf(dot_file, "\t}\n");
+
 
     fprintf(dot_file, "}\n");
 
@@ -67,29 +105,31 @@ static void DumpHtmlFile(DLList_t * list)
 
     fprintf(dump_html_fptr,
             "<h2>\n"
+            "<pre>\n"
             "\n"
-            "err_code: %d <br><br>\n"
+            "err_code: %d\n"
             "\n"
             "data:",
             (int) list->err_code);
     for (int i = 0; i < list->capacity; ++i)
         fprintf(dump_html_fptr, " %-5lg", list->data[i]);
 
-    fprintf(dump_html_fptr, " <br>\nnext:");
+    fprintf(dump_html_fptr, " \nnext:");
     for (int i = 0; i < list->capacity; ++i)
         fprintf(dump_html_fptr, " %-5d", list->next[i]);
 
-    fprintf(dump_html_fptr, " <br>\nprev:");
+    fprintf(dump_html_fptr, " \nprev:");
     for (int i = 0; i < list->capacity; ++i)
         fprintf(dump_html_fptr, " %-5d", list->prev[i]);
 
     fprintf(dump_html_fptr,
-            " <br><br>\n\n"
-            "free:     %d <br>\n"
-            "capacity: %d <br>\n"
-            "size:     %d <br><br>\n"
+            "\n\n"
+            "free:     %d\n"
+            "capacity: %d\n"
+            "size:     %d\n"
             "\n"
-            "<img src=\"%s\"> <br><br>\n\n"
+            "<img src=\"%s\">\n\n"
+            "</pre>\n"
             "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- <br>\n"
             "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- <br>\n"
             "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- <br>\n"
@@ -110,10 +150,10 @@ void ListDump(DLList_t* list)
 
 static void SystemCallDot()
 {
-    sprintf(dump_graph_fname, "list_graph%d.png", dump_number);
+    sprintf(dump_graph_fname, "list_graph%d.svg", dump_number);
 
     char command[MAX_CMD_LEN] = {};
-    sprintf(command, "dot -Tpng -Gdpi=150 " DUMP_DOT_FNAME " > " DUMP_LOG_PATH "%s", dump_graph_fname);
+    sprintf(command, "dot -Tsvg " DUMP_DOT_FNAME " -o " DUMP_LOG_PATH "%s", dump_graph_fname);
 
     if (system(command) != 0)
     {
