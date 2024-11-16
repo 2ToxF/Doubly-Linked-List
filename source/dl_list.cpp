@@ -114,14 +114,14 @@ ListError ListInsertTail(DLList_t* list, ListElem_t insert_value)
             return list_err;
 
     int cur_free = list->free;
+    list->free = list->next[cur_free];
 
     list->data[cur_free] = insert_value;
-
-    list->free = list->next[cur_free];
-    list->next[cur_free] = list->prev[0];
-
+    list->next[cur_free] = list->next[0];
     list->prev[cur_free] = 0;
-    list->prev[0] = cur_free;
+
+    list->prev[list->next[0]] = cur_free;
+    list->next[0] = cur_free;
 
     ++list->size;
 

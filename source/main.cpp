@@ -9,12 +9,10 @@ int main()
     ListInit(&list);
     ListDump(&list);
 
-    for (int i = 1; i < 8; ++i)
-    {
+    for (int i = 1; i < 6; ++i)
         ListInsertHead(&list, i*10);
-        ListDump(&list);
-    }
 
+    ListDump(&list);
     DumpClose();
     return 0;
 }

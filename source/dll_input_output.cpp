@@ -4,7 +4,7 @@
 #include "dll_input_output.h"
 
 #define DUMP_LOG_PATH  "logs/"
-#define DUMP_DOT_FNAME DUMP_LOG_PATH "dump_dotfile"
+#define DUMP_DOT_FNAME DUMP_LOG_PATH "dump_dotfile.dot"
 
 static const int         MAX_CMD_LEN     = 100;
 static const int         MAX_FNAME_LEN   = 30;
@@ -37,11 +37,10 @@ static void DumpDotFile(DLList_t* list)
     fprintf(dot_file,
             "digraph {\n"
             "\trankdir=LR;\n"
-            "\tbgcolor=\"darkslategray1\";\n"
+            "\tbgcolor=\"bisque2\";\n"
             "\tfontname=\"Courier New\";\n"
             "\tnode[shape=\"Mrecord\", color=\"coral\", style=\"filled\", fillcolor=\"darkmagenta\", "
                     "fontcolor=\"white\", fontsize=14];\n"
-            "\tfree[penwidth=3.0, color=\"green\", label=\"free\", fontcolor=\"lightgreen\"];\n"
             );
 
     fprintf(dot_file, "\tn%d[penwidth=3.0, label=\"IDX%d | data: %lg | <next> head: %d | <prev> tail: %d\"];\n",
@@ -52,15 +51,10 @@ static void DumpDotFile(DLList_t* list)
                 i, i, list->data[i], list->next[i], list->prev[i]);
     }
 
-    int cur_elem_idx = 0;
-    for (int i = 0; i < list->size - 1; ++i)
-    {
-        fprintf(dot_file, "\tn%d -> n%d [weight=100, color=\"darkslategray1\"];\n",
-                cur_elem_idx, list->next[cur_elem_idx]);
-        cur_elem_idx = list->next[cur_elem_idx];
-    }
+    for (int i = 0; i < list->capacity - 1; ++i)
+        fprintf(dot_file, "\tn%d -> n%d [weight=100, color=\"bisque2\"];\n", i, i + 1);
 
-    cur_elem_idx = 0;
+    int cur_elem_idx = 0;
     for (int i = 0; i < list->size; ++i)
     {
         fprintf(dot_file, "\tn%d -> n%d [color=\"red\"];\n\tn%d -> n%d [color=\"blue\"];\n",
@@ -70,7 +64,7 @@ static void DumpDotFile(DLList_t* list)
 
     cur_elem_idx = list->free;
     if (list->size != list->capacity)
-        fprintf(dot_file, "\tfree -> n%d:next [color=\"green\"];\n", cur_elem_idx);
+        fprintf(dot_file, "\tfree:n -> n%d:prev:s [color=\"green\"];\n", cur_elem_idx);
 
     for (int i = 0; i < list->capacity - list->size - 1; ++i)
     {
@@ -78,6 +72,16 @@ static void DumpDotFile(DLList_t* list)
                 cur_elem_idx, list->next[cur_elem_idx]);
         cur_elem_idx = list->next[cur_elem_idx];
     }
+
+    fprintf(dot_file,
+            "\ttail[shape=\"Mdiamond\", penwidth=3.0, color=\"coral\", label=\"tail\", fontcolor=\"darkgoldenrod1\"];\n"
+            "\thead[shape=\"Mdiamond\", penwidth=3.0, color=\"coral\", label=\"head\", fontcolor=\"darkgoldenrod1\"];\n"
+            "\tfree[shape=\"Mdiamond\", penwidth=3.0, color=\"green\", label=\"free\", fontcolor=\"lightgreen\"];\n"
+            // "\ttail -> head [weight=100, color=\"bisque2\"];\n"
+            // "\thead -> free [weight=100, color=\"bisque2\"];\n"
+            "\thead -> n%d [color=\"blue\"];\n"
+            "\ttail -> n%d [color=\"red\"];\n",
+            list->prev[0], list->next[0]);
 
     fprintf(dot_file, "}\n");
 
