@@ -16,7 +16,7 @@ static int   dump_number    = 0;
 static FILE* dump_html_fptr = NULL;
 
 static void DumpDotFile  (DLList_t* list);
-static void DumpHtmlFile (DLList_t* list);
+static void DumpHtmlFile (DLList_t* list, const char* file_name, const char* func_name, const int line);
 static void SystemCallDot();
 
 void DumpClose()
@@ -36,23 +36,47 @@ static void DumpDotFile(DLList_t* list)
 
     fprintf(dot_file,
             "digraph {\n"
-            "\trankdir=LR;\n"
+            "\trankdir=TB;\n"
             "\tbgcolor=\"bisque2\";\n"
             "\tfontname=\"Courier New\";\n"
-            "\tnode[shape=\"Mrecord\", color=\"coral\", style=\"filled\", fillcolor=\"darkmagenta\", "
-                    "fontcolor=\"white\", fontsize=14];\n"
+            "\tnodesep=0.9;"
+            "\tranksep=2;"
+            // "\tordering=\"out\";"
+            // "\tsplines=\"ortho\";"
+            "\tedge[weight=0];\n"
+            "\tnode[shape=\"box\", color=\"coral\", style=\"filled, rounded\", fillcolor=\"darkmagenta\", "
+                    "fontcolor=\"white\", fontsize=14];\n\n"
             );
 
-    fprintf(dot_file, "\tn%d[penwidth=3.0, label=\"IDX%d | data: %lg | <next> head: %d | <prev> tail: %d\"];\n",
+    fprintf(dot_file,
+            "\tn%d[penwidth=3.0, "
+            "label=< <TABLE> "
+            "<tr><td PORT=\"IDX\">IDX%d</td></tr> "
+            "<tr><td PORT=\"IDX\">data: %lg</td></tr> "
+            "<tr><td PORT=\"next\"> head: %d</td></tr> "
+            "<tr><td PORT=\"prev\"> tail: %d</td></tr> </TABLE> >];\n",
             0, 0, list->data[0], list->next[0], list->prev[0]);
     for (int i = 1; i < list->capacity; ++i)
     {
-        fprintf(dot_file, "\tn%d[label=\"IDX%d | data: %lg | <next> next: %d | <prev> prev: %d\"];\n",
+        fprintf(dot_file,
+                "\tn%d["
+                "label=< <TABLE> "
+                "<tr><td PORT=\"IDX\">IDX%d</td></tr> "
+                "<tr><td PORT=\"data\">data: %lg</td></tr> "
+                "<tr><td PORT=\"next\"> next: %d</td></tr> "
+                "<tr><td PORT=\"prev\"> prev: %d</td></tr> </TABLE> >];\n",
                 i, i, list->data[i], list->next[i], list->prev[i]);
     }
 
+    fprintf(dot_file, "\n\t{rank=\"min\"");
+    for (int i = 0; i < list->capacity; ++i)
+        fprintf(dot_file, "; n%d", i);
+    fprintf(dot_file, "};\n\n");
+
     for (int i = 0; i < list->capacity - 1; ++i)
-        fprintf(dot_file, "\tn%d -> n%d [weight=100, color=\"bisque2\"];\n", i, i + 1);
+        fprintf(dot_file, "\tn%d -> n%d [weight=100, style=\"invis\""/*, color=\"bisque2\"*/"];\n", i, i + 1);
+
+    fputc('\n', dot_file);
 
     int cur_elem_idx = 0;
     for (int i = 0; i < list->size; ++i)
@@ -64,7 +88,7 @@ static void DumpDotFile(DLList_t* list)
 
     cur_elem_idx = list->free;
     if (list->size != list->capacity)
-        fprintf(dot_file, "\tfree:n -> n%d:prev:s [color=\"green\"];\n", cur_elem_idx);
+        fprintf(dot_file, "\n\tfree -> n%d:prev:s [color=\"green\"];\n", cur_elem_idx);
 
     for (int i = 0; i < list->capacity - list->size - 1; ++i)
     {
@@ -74,13 +98,14 @@ static void DumpDotFile(DLList_t* list)
     }
 
     fprintf(dot_file,
-            "\ttail[shape=\"Mdiamond\", penwidth=3.0, color=\"coral\", label=\"tail\", fontcolor=\"darkgoldenrod1\"];\n"
-            "\thead[shape=\"Mdiamond\", penwidth=3.0, color=\"coral\", label=\"head\", fontcolor=\"darkgoldenrod1\"];\n"
-            "\tfree[shape=\"Mdiamond\", penwidth=3.0, color=\"green\", label=\"free\", fontcolor=\"lightgreen\"];\n"
+            "\n\ttail[shape=\"Mdiamond\", penwidth=3.0, color=\"cadetblue3\", label=<tail>, fontcolor=\"darkgoldenrod1\"];\n"
+              "\thead[shape=\"Mdiamond\", penwidth=3.0, color=\"cadetblue3\", label=<head>, fontcolor=\"darkgoldenrod1\"];\n"
+              "\tfree[shape=\"Mdiamond\", penwidth=3.0, color=\"green\",      label=<free>, fontcolor=\"lightgreen\"];\n"
             // "\ttail -> head [weight=100, color=\"bisque2\"];\n"
             // "\thead -> free [weight=100, color=\"bisque2\"];\n"
             "\thead -> n%d [color=\"blue\"];\n"
-            "\ttail -> n%d [color=\"red\"];\n",
+            "\ttail -> n%d [color=\"red\"];\n"
+            "\t{rank=\"sink\"; tail; head; free};\n",
             list->prev[0], list->next[0]);
 
     fprintf(dot_file, "}\n");
@@ -88,7 +113,7 @@ static void DumpDotFile(DLList_t* list)
     fclose(dot_file);
 }
 
-static void DumpHtmlFile(DLList_t * list)
+static void DumpHtmlFile(DLList_t* list, const char* file_name, const char* func_name, const int line)
 {
     if (dump_number == 0)
         dump_html_fptr = fopen(DUMP_HTML_FNAME, "w");
@@ -97,10 +122,12 @@ static void DumpHtmlFile(DLList_t * list)
             "<h2>\n"
             "<pre>\n"
             "\n"
+            "LIST \"%s\"   in file: %s   line: %d   func: %s\n"
+            "\n"
             "err_code: %d\n"
             "\n"
             "data:",
-            (int) list->err_code);
+            list->list_name, file_name, line, func_name, (int) list->err_code);
     for (int i = 0; i < list->capacity; ++i)
         fprintf(dump_html_fptr, " %-5lg", list->data[i]);
 
@@ -129,11 +156,11 @@ static void DumpHtmlFile(DLList_t * list)
 }
 
 
-void ListDump(DLList_t* list)
+void ListDump(DLList_t* list, const char* file_name, const char* func_name, const int line)
 {
     DumpDotFile(list);
     SystemCallDot();
-    DumpHtmlFile(list);
+    DumpHtmlFile(list, file_name, func_name, line);
     ++dump_number;
 }
 

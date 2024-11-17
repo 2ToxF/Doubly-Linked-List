@@ -13,6 +13,6 @@
 #define WHT "\033[0;37m"
 
 void DumpClose();
-void ListDump (DLList_t* list);
+void ListDump (DLList_t* list, const char* file_name, const char* func_name, const int line);
 
 #endif

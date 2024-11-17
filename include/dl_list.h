@@ -1,7 +1,9 @@
 #ifndef DL_LIST_H
 #define DL_LIST_H
 
-#include "list_settings.h"
+#define CREATE_LIST(__list_name__) {#__list_name__};
+
+typedef double ListElem_t;
 
 const int MIN_LIST_CAPAC   = 8;
 const int RESIZE_COEF      = 2;
@@ -19,43 +21,46 @@ enum ListError
 
     LIST_ELEM_ALREADY_FREE_ERR,
 
-    LIST_OVERFLOW_ERR,
-    LIST_ANTIOVERFLOW_ERR,
-
-    LIST_NEG_SIZE_ERR,
     LIST_NEG_ELEM_NUM_ERR,
+    LIST_NEG_SIZE_ERR,
 
+    LIST_NEG_FREE_IDX_ERR,
     LIST_NEG_HEAD_IDX_ERR,
     LIST_NEG_TAIL_IDX_ERR,
-    LIST_NEG_FREE_IDX_ERR,
+
+    LIST_ANTIOVERFLOW_ERR,
+    LIST_OVERFLOW_ERR,
+
+    LIST_USES_MUCH_MEM_ERR,
 };
 
 struct DLList_t
 {
-    ListError err_code;
+    const char* list_name;
+    ListError   err_code;
 
     ListElem_t* data;
 
     int* next;
     int* prev;
 
-    int free;
+    int  capacity;
+    int  size;
 
-    int capacity;
-    int size;
+    int  free;
 };
 
 ListError ListDtor       (DLList_t* list);
 ListError ListInit       (DLList_t* list);
 
 ListError ListInsertAfter(DLList_t* list, ListElem_t insert_value, int insert_idx);
-ListError ListInsertTail (DLList_t* list, ListElem_t insert_value);
 ListError ListInsertHead (DLList_t* list, ListElem_t insert_value);
+ListError ListInsertTail (DLList_t* list, ListElem_t insert_value);
 
 ListError ListLinearize  (DLList_t* list);
 
+ListError ListPopHead    (DLList_t* list, ListElem_t* var_for_pop);
 ListError ListPopIdx     (DLList_t* list, ListElem_t* var_for_pop, int pop_idx);
 ListError ListPopTail    (DLList_t* list, ListElem_t* var_for_pop);
-ListError ListPopHead    (DLList_t* list, ListElem_t* var_for_pop);
 
 #endif
